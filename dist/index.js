@@ -28907,17 +28907,43 @@ function wrappy (fn, cb) {
 /***/ }),
 
 /***/ 6724:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.addLabelsFromIssueToPR = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function addLabelsFromIssueToPR(issueNumber) {
     const labels = await getLabelsFromIssue(issueNumber);
+    core.info(`Found ${labels.length} labels`);
     if (labels.length > 0) {
+        core.info(`Add labels: ${labels.join(', ')}`);
         await addLabelsToPR(labels);
     }
 }
@@ -29068,6 +29094,7 @@ exports.moveIssueToInReview = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const octokit_1 = __nccwpck_require__(1855);
 async function moveIssueToInReview(issueNumber) {
+    core.info(`Move issue #${issueNumber} to In Review`);
     await (0, octokit_1.getOctokit)().graphql(`
     mutation ($columnId: ID!, $cardId: ID!) {
       moveProjectCard(input: {cardId: $cardId, columnId: $columnId}) {
@@ -29186,12 +29213,22 @@ const get_linked_issues_1 = __nccwpck_require__(7697);
 const move_issue_to_in_review_1 = __nccwpck_require__(5692);
 async function run() {
     try {
-        const linkedIssues = await (0, get_linked_issues_1.getLinkedIssues)();
+        const linkedIssues = await core.group('Find linked issues', async () => {
+            const issues = await (0, get_linked_issues_1.getLinkedIssues)();
+            core.info(`Found ${issues.length} linked issues`);
+            return issues;
+        });
         for (const issue of linkedIssues) {
-            await (0, add_labels_from_issue_to_pr_1.addLabelsFromIssueToPR)(issue.number);
-            await (0, move_issue_to_in_review_1.moveIssueToInReview)(issue.number);
+            await core.group(`Sync issue #${issue.number} with PR`, async () => {
+                await core.group(`#${issue.number} ${issue.title}`, async () => {
+                    await (0, add_labels_from_issue_to_pr_1.addLabelsFromIssueToPR)(issue.number);
+                    await (0, move_issue_to_in_review_1.moveIssueToInReview)(issue.number);
+                });
+            });
         }
         if (!linkedIssues.length) {
+            core.info('No linked issues found');
+            core.info('Move PR to In Review');
             await (0, add_pr_to_the_project_1.addPrToTheProject)();
         }
     }
