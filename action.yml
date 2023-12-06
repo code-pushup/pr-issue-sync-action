@@ -1,6 +1,9 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'PR-issue Sync Action'
+#        when a PR is linked to an issue, issue status should change to "In review"
+#        when a PR is linked to an issue, all of the issue's labels should be added to the PR
+#        when a PR is not linked to an issue, it should be added to Project board with "In review" status
+description: 'Syncs PRs with issues'
+author: 'Code PushUp'
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
@@ -9,15 +12,9 @@ branding:
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  github-token:
+    description: 'GitHub Token'
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
 
 runs:
   using: node20
