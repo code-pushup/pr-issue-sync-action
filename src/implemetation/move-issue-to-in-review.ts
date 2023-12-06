@@ -2,6 +2,8 @@ import * as core from '@actions/core';
 import { getOctokit } from './octokit';
 
 export async function moveIssueToInReview(issueNumber: number): Promise<void> {
+  core.info(`Move issue #${issueNumber} to In Review`);
+
   await getOctokit().graphql(
     `
     mutation ($columnId: ID!, $cardId: ID!) {

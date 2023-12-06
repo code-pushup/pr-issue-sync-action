@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { getOctokit } from './octokit';
 
@@ -5,8 +6,10 @@ export async function addLabelsFromIssueToPR(
   issueNumber: number,
 ): Promise<void> {
   const labels = await getLabelsFromIssue(issueNumber);
+  core.info(`Found ${labels.length} labels`);
 
   if (labels.length > 0) {
+    core.info(`Add labels: ${labels.join(', ')}`);
     await addLabelsToPR(labels);
   }
 }

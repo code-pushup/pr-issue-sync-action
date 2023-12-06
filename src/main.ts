@@ -6,14 +6,24 @@ import { moveIssueToInReview } from './implemetation/move-issue-to-in-review';
 
 export async function run(): Promise<void> {
   try {
-    const linkedIssues = await getLinkedIssues();
+    const linkedIssues = await core.group('Find linked issues', async () => {
+      const issues = await getLinkedIssues();
+      core.info(`Found ${issues.length} linked issues`);
+      return issues;
+    });
 
     for (const issue of linkedIssues) {
-      await addLabelsFromIssueToPR(issue.number);
-      await moveIssueToInReview(issue.number);
+      await core.group(`Sync issue #${issue.number} with PR`, async () => {
+        await core.group(`#${issue.number} ${issue.title}`, async () => {
+          await addLabelsFromIssueToPR(issue.number);
+          await moveIssueToInReview(issue.number);
+        });
+      });
     }
 
     if (!linkedIssues.length) {
+      core.info('No linked issues found');
+      core.info('Move PR to In Review');
       await addPrToTheProject();
     }
   } catch (error) {
