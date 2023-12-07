@@ -29014,8 +29014,13 @@ const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function addPrToTheProject() {
+    const columnId = core.getInput('in-review-column-id');
+    if (!columnId) {
+        core.info('No column id provided, skipping');
+        return;
+    }
     await (0, octokit_1.getOctokit)().rest.projects.createCard({
-        column_id: parseInt(core.getInput('in-review-column-id', { required: true }), 10),
+        column_id: parseInt(columnId, 10),
         content_id: github_1.context.issue.number,
         content_type: 'PullRequest',
     });
@@ -29095,6 +29100,11 @@ const core = __importStar(__nccwpck_require__(2186));
 const octokit_1 = __nccwpck_require__(1855);
 async function moveIssueToInReview(issueNumber) {
     core.info(`Move issue #${issueNumber} to In Review`);
+    const columnId = core.getInput('in-review-column-id');
+    if (!columnId) {
+        core.info('No column id provided, skipping');
+        return;
+    }
     await (0, octokit_1.getOctokit)().graphql(`
     mutation ($columnId: ID!, $cardId: ID!) {
       moveProjectCard(input: {cardId: $cardId, columnId: $columnId}) {
@@ -29102,7 +29112,7 @@ async function moveIssueToInReview(issueNumber) {
       }
     }
   `, {
-        columnId: core.getInput('in-review-column-id', { required: true }),
+        columnId,
         cardId: await getCardId(issueNumber),
     });
 }
