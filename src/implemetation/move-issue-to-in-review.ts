@@ -4,6 +4,13 @@ import { getOctokit } from './octokit';
 export async function moveIssueToInReview(issueNumber: number): Promise<void> {
   core.info(`Move issue #${issueNumber} to In Review`);
 
+  const columnId = core.getInput('in-review-column-id');
+
+  if (!columnId) {
+    core.info('No column id provided, skipping');
+    return;
+  }
+
   await getOctokit().graphql(
     `
     mutation ($columnId: ID!, $cardId: ID!) {
@@ -13,7 +20,7 @@ export async function moveIssueToInReview(issueNumber: number): Promise<void> {
     }
   `,
     {
-      columnId: core.getInput('in-review-column-id', { required: true }),
+      columnId,
       cardId: await getCardId(issueNumber),
     },
   );
