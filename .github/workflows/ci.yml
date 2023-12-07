@@ -56,7 +56,6 @@ jobs:
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          in-review-column-id: 123456789
 
       - name: Print Output
         id: output
