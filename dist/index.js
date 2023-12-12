@@ -29051,8 +29051,8 @@ async function getPRId() {
       }
     }
   `, {
-        owner: process.env.GITHUB_REPOSITORY_OWNER,
-        name: process.env.GITHUB_REPOSITORY_NAME,
+        owner: github_1.context.repo.owner,
+        name: github_1.context.repo.repo,
         number: github_1.context.issue.number,
     });
     return response.repository.pullRequest.id;
