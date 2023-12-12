@@ -8,7 +8,7 @@ export async function moveIssueToInReviewStatus(
   core.info(`Move issue #${issueNumber} to In Review`);
 
   try {
-    const itemId = await getIssueId(issueNumber);
+    const itemId = await getProjectV2ItemId(issueNumber);
 
     if (!itemId) {
       core.warning(`No issue id found for #${issueNumber}`);
@@ -33,6 +33,49 @@ export async function moveIssueToInReviewStatus(
   } catch (error) {
     if (error instanceof Error) {
       core.error(`Error while moving issue to In Review: ${error.message}`);
+    }
+  }
+}
+
+async function getProjectV2ItemId(
+  issueId: number,
+): Promise<string | undefined> {
+  core.info('Add PR to the project');
+
+  try {
+    const contentId = await getIssueId(issueId);
+
+    if (!contentId) {
+      core.error(`No PR id found for #${context.issue.number}`);
+      return;
+    }
+
+    const mutationResponse = await getOctokit().graphql<{
+      addProjectV2ItemById: {
+        item: {
+          id: string;
+        };
+      };
+    }>(
+      `
+        mutation ($projectId: ID!, $contentId: ID!) {
+          addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
+            item {
+              id
+            }
+          }
+        }
+      `,
+      {
+        projectId: core.getInput('project-id'),
+        contentId,
+      },
+    );
+
+    return mutationResponse.addProjectV2ItemById.item.id;
+  } catch (error) {
+    if (error instanceof Error) {
+      core.error(`Error while getting PR id: ${error.message}`);
     }
   }
 }
