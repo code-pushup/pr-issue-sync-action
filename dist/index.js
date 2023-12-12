@@ -29231,11 +29231,11 @@ async function moveIssueToInReviewStatus(issueNumber) {
 }
 exports.moveIssueToInReviewStatus = moveIssueToInReviewStatus;
 async function getProjectV2ItemId(issueId) {
-    core.info('Add PR to the project');
+    core.info('Get issue id');
     try {
         const contentId = await getIssueId(issueId);
         if (!contentId) {
-            core.error(`No PR id found for #${github_1.context.issue.number}`);
+            core.error(`No issue id found for #${issueId}`);
             return;
         }
         const mutationResponse = await (0, octokit_1.getOctokit)().graphql(`
@@ -29254,7 +29254,7 @@ async function getProjectV2ItemId(issueId) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while getting PR id: ${error.message}`);
+            core.error(`Error while getting issue id: ${error.message}`);
         }
     }
 }

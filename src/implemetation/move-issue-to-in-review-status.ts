@@ -40,13 +40,13 @@ export async function moveIssueToInReviewStatus(
 async function getProjectV2ItemId(
   issueId: number,
 ): Promise<string | undefined> {
-  core.info('Add PR to the project');
+  core.info('Get issue id');
 
   try {
     const contentId = await getIssueId(issueId);
 
     if (!contentId) {
-      core.error(`No PR id found for #${context.issue.number}`);
+      core.error(`No issue id found for #${issueId}`);
       return;
     }
 
@@ -75,7 +75,7 @@ async function getProjectV2ItemId(
     return mutationResponse.addProjectV2ItemById.item.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while getting PR id: ${error.message}`);
+      core.error(`Error while getting issue id: ${error.message}`);
     }
   }
 }
