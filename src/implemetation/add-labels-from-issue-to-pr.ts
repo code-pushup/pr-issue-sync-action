@@ -40,7 +40,7 @@ async function getLabelsFromIssue(issueNumber: number): Promise<string[]> {
     return labelsPayload.repository.issue.labels.nodes.map(node => node.name);
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while getting labels from issue: ${error.message}`);
+      core.error(`Error while getting labels from issue: ${error.message}`);
     }
 
     return [];
@@ -69,7 +69,7 @@ async function addLabelsToPR(labels: string[]): Promise<void> {
     });
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while adding labels to PR: ${error.message}`);
+      core.error(`Error while adding labels to PR: ${error.message}`);
     }
   }
 }

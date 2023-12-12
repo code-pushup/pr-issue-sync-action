@@ -9,7 +9,7 @@ export async function addPrToTheProject(): Promise<string | undefined> {
     const contentId = await getPRId();
 
     if (!contentId) {
-      core.warning(`No PR id found for #${context.issue.number}`);
+      core.error(`No PR id found for #${context.issue.number}`);
       return;
     }
 
@@ -38,7 +38,7 @@ export async function addPrToTheProject(): Promise<string | undefined> {
     return mutationResponse.addProjectV2ItemById.item.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while adding PR to the project: ${error.message}`);
+      core.error(`Error while adding PR to the project: ${error.message}`);
     }
   }
 }
@@ -93,7 +93,7 @@ async function getPRId(): Promise<string | undefined> {
     return response.repository.pullRequest.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while getting PR id: ${error.message}`);
+      core.error(`Error while getting PR id: ${error.message}`);
     }
   }
 }

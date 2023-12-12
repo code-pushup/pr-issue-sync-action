@@ -30,7 +30,7 @@ export async function getLinkedIssues(): Promise<LinkedIssue[]> {
     return response.repository.pullRequest.closingIssuesReferences.nodes;
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while getting linked issues: ${error.message}`);
+      core.error(`Error while getting linked issues: ${error.message}`);
     }
 
     return [];

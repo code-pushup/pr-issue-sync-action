@@ -32,7 +32,7 @@ export async function moveIssueToInReviewStatus(
     );
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while moving issue to In Review: ${error.message}`);
+      core.error(`Error while moving issue to In Review: ${error.message}`);
     }
   }
 }
@@ -69,7 +69,7 @@ async function getIssueId(issueNumber: number): Promise<string | undefined> {
     return response.repository.issue.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.warning(`Error while getting issue id: ${error.message}`);
+      core.error(`Error while getting issue id: ${error.message}`);
     }
   }
 }

@@ -28971,7 +28971,7 @@ async function getLabelsFromIssue(issueNumber) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while getting labels from issue: ${error.message}`);
+            core.error(`Error while getting labels from issue: ${error.message}`);
         }
         return [];
     }
@@ -28987,7 +28987,7 @@ async function addLabelsToPR(labels) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while adding labels to PR: ${error.message}`);
+            core.error(`Error while adding labels to PR: ${error.message}`);
         }
     }
 }
@@ -29033,7 +29033,7 @@ async function addPrToTheProject() {
     try {
         const contentId = await getPRId();
         if (!contentId) {
-            core.warning(`No PR id found for #${github_1.context.issue.number}`);
+            core.error(`No PR id found for #${github_1.context.issue.number}`);
             return;
         }
         const mutationResponse = await (0, octokit_1.getOctokit)().graphql(`
@@ -29052,7 +29052,7 @@ async function addPrToTheProject() {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while adding PR to the project: ${error.message}`);
+            core.error(`Error while adding PR to the project: ${error.message}`);
         }
     }
 }
@@ -29093,7 +29093,7 @@ async function getPRId() {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while getting PR id: ${error.message}`);
+            core.error(`Error while getting PR id: ${error.message}`);
         }
     }
 }
@@ -29159,7 +29159,7 @@ async function getLinkedIssues() {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while getting linked issues: ${error.message}`);
+            core.error(`Error while getting linked issues: ${error.message}`);
         }
         return [];
     }
@@ -29225,7 +29225,7 @@ async function moveIssueToInReviewStatus(issueNumber) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while moving issue to In Review: ${error.message}`);
+            core.error(`Error while moving issue to In Review: ${error.message}`);
         }
     }
 }
@@ -29251,7 +29251,7 @@ async function getIssueId(issueNumber) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.warning(`Error while getting issue id: ${error.message}`);
+            core.error(`Error while getting issue id: ${error.message}`);
         }
     }
 }
