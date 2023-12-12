@@ -112,7 +112,7 @@ async function getIssueId(issueNumber: number): Promise<string | undefined> {
     return response.repository.issue.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while getting issue id: ${error.message}`);
+      throw new Error(`Error while getting issue id: ${error.message}`);
     }
   }
 }

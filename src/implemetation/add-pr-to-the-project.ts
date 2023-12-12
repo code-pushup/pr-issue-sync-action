@@ -38,7 +38,7 @@ export async function addPrToTheProject(): Promise<string | undefined> {
     return mutationResponse.addProjectV2ItemById.item.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while adding PR to the project: ${error.message}`);
+      throw new Error(`Error while adding PR to the project: ${error.message}`);
     }
   }
 }
@@ -93,7 +93,7 @@ async function getPRId(): Promise<string | undefined> {
     return response.repository.pullRequest.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while getting PR id: ${error.message}`);
+      throw new Error(`Error while getting PR id: ${error.message}`);
     }
   }
 }

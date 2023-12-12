@@ -28940,7 +28940,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function addLabelsFromIssueToPR(issueNumber) {
-    const labels = await getLabelsFromIssue(issueNumber);
+    const labels = (await getLabelsFromIssue(issueNumber)) ?? [];
     core.info(`Found ${labels.length} labels`);
     if (labels.length > 0) {
         core.info(`Add labels: ${labels.join(', ')}`);
@@ -28971,9 +28971,8 @@ async function getLabelsFromIssue(issueNumber) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while getting labels from issue: ${error.message}`);
+            throw new Error(`Error while getting labels from issue: ${error.message}`);
         }
-        return [];
     }
 }
 async function addLabelsToPR(labels) {
@@ -28987,7 +28986,7 @@ async function addLabelsToPR(labels) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while adding labels to PR: ${error.message}`);
+            throw new Error(`Error while adding labels to PR: ${error.message}`);
         }
     }
 }
@@ -29052,7 +29051,7 @@ async function addPrToTheProject() {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while adding PR to the project: ${error.message}`);
+            throw new Error(`Error while adding PR to the project: ${error.message}`);
         }
     }
 }
@@ -29093,7 +29092,7 @@ async function getPRId() {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while getting PR id: ${error.message}`);
+            throw new Error(`Error while getting PR id: ${error.message}`);
         }
     }
 }
@@ -29102,41 +29101,16 @@ async function getPRId() {
 /***/ }),
 
 /***/ 7697:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getLinkedIssues = void 0;
-const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function getLinkedIssues() {
-    try {
-        const response = await (0, octokit_1.getOctokit)().graphql(`
+    const response = await (0, octokit_1.getOctokit)().graphql(`
         query ($owner: String!, $name: String!, $number: Int!) {
           repository(owner: $owner, name: $name) {
             pullRequest(number: $number) {
@@ -29151,18 +29125,11 @@ async function getLinkedIssues() {
           }
         }
       `, {
-            owner: github_1.context.repo.owner,
-            name: github_1.context.repo.repo,
-            number: github_1.context.issue.number,
-        });
-        return response.repository.pullRequest.closingIssuesReferences.nodes;
-    }
-    catch (error) {
-        if (error instanceof Error) {
-            core.error(`Error while getting linked issues: ${error.message}`);
-        }
-        return [];
-    }
+        owner: github_1.context.repo.owner,
+        name: github_1.context.repo.repo,
+        number: github_1.context.issue.number,
+    });
+    return response.repository.pullRequest.closingIssuesReferences.nodes;
 }
 exports.getLinkedIssues = getLinkedIssues;
 
@@ -29279,7 +29246,7 @@ async function getIssueId(issueNumber) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while getting issue id: ${error.message}`);
+            throw new Error(`Error while getting issue id: ${error.message}`);
         }
     }
 }

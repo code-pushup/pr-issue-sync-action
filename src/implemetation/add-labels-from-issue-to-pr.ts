@@ -5,7 +5,7 @@ import { getOctokit } from './octokit';
 export async function addLabelsFromIssueToPR(
   issueNumber: number,
 ): Promise<void> {
-  const labels = await getLabelsFromIssue(issueNumber);
+  const labels = (await getLabelsFromIssue(issueNumber)) ?? [];
   core.info(`Found ${labels.length} labels`);
 
   if (labels.length > 0) {
@@ -14,7 +14,9 @@ export async function addLabelsFromIssueToPR(
   }
 }
 
-async function getLabelsFromIssue(issueNumber: number): Promise<string[]> {
+async function getLabelsFromIssue(
+  issueNumber: number,
+): Promise<string[] | undefined> {
   try {
     const labelsPayload = await getOctokit().graphql<LabelsNamesPayload>(
       `
@@ -40,10 +42,10 @@ async function getLabelsFromIssue(issueNumber: number): Promise<string[]> {
     return labelsPayload.repository.issue.labels.nodes.map(node => node.name);
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while getting labels from issue: ${error.message}`);
+      throw new Error(
+        `Error while getting labels from issue: ${error.message}`,
+      );
     }
-
-    return [];
   }
 }
 
@@ -69,7 +71,7 @@ async function addLabelsToPR(labels: string[]): Promise<void> {
     });
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while adding labels to PR: ${error.message}`);
+      throw new Error(`Error while adding labels to PR: ${error.message}`);
     }
   }
 }
