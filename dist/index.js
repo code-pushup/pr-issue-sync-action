@@ -29014,18 +29014,49 @@ const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function addPrToTheProject() {
-    const columnId = core.getInput('in-review-column-id');
-    if (!columnId) {
-        core.info('No column id provided, skipping');
-        return;
+    const mutationResponse = await (0, octokit_1.getOctokit)().graphql(`
+    mutation ($projectId: ID!, $contentId: ID!) {
+      addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
+        item {
+          id
+        }
+      }
     }
-    await (0, octokit_1.getOctokit)().rest.projects.createCard({
-        column_id: parseInt(columnId, 10),
-        content_id: github_1.context.issue.number,
-        content_type: 'PullRequest',
+  `, {
+        projectId: core.getInput('project-id'),
+        contentId: await getPRId(),
+    });
+    const itemId = mutationResponse.addProjectV2ItemById.item.id;
+    await (0, octokit_1.getOctokit)().graphql(`
+      mutation ($itemId: ID!, $projectId: ID!, $filedId: ID!, $optionId: String!) {
+          updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $filedId, value: {singleSelectOptionId: $optionId}, projectId: $projectId}) {
+              clientMutationId
+          }
+      }
+  `, {
+        itemId,
+        projectId: core.getInput('project-id'),
+        filedId: core.getInput('status-field-id'),
+        optionId: core.getInput('in-review-status-value-id'),
     });
 }
 exports.addPrToTheProject = addPrToTheProject;
+async function getPRId() {
+    const response = await (0, octokit_1.getOctokit)().graphql(`
+    query ($owner: String!, $name: String!, $number: Int!) {
+      repository(owner: $owner, name: $name) {
+        pullRequest(number: $number) {
+          id
+        }
+      }
+    }
+  `, {
+        owner: process.env.GITHUB_REPOSITORY_OWNER,
+        name: process.env.GITHUB_REPOSITORY_NAME,
+        number: github_1.context.issue.number,
+    });
+    return response.repository.pullRequest.id;
+}
 
 
 /***/ }),
@@ -29223,11 +29254,8 @@ const get_linked_issues_1 = __nccwpck_require__(7697);
 const move_issue_to_in_review_1 = __nccwpck_require__(5692);
 async function run() {
     try {
-        const linkedIssues = await core.group('Find linked issues', async () => {
-            const issues = await (0, get_linked_issues_1.getLinkedIssues)();
-            core.info(`Found ${issues.length} linked issues`);
-            return issues;
-        });
+        const linkedIssues = await core.group('Find linked issues', get_linked_issues_1.getLinkedIssues);
+        core.info(`Found ${linkedIssues.length} linked issues`);
         for (const issue of linkedIssues) {
             await core.group(`Sync issue #${issue.number} with PR`, async () => {
                 await core.group(`#${issue.number} ${issue.title}`, async () => {
