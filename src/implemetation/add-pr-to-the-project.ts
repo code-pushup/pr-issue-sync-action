@@ -10,9 +10,17 @@ export async function addPrToTheProject(): Promise<void> {
     return;
   }
 
-  await getOctokit().rest.projects.createCard({
-    column_id: columnId as unknown as number,
-    content_id: context.issue.number,
-    content_type: 'PullRequest',
-  });
+  await getOctokit().graphql(
+    `
+    mutation ($columnId: ID!, $cardId: ID!) {
+      addProjectCard(input: {projectColumnId: $columnId, contentId: $cardId}) {
+        clientMutationId
+      }
+    }
+  `,
+    {
+      columnId,
+      contentId: context.issue.number,
+    },
+  );
 }
