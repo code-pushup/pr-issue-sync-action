@@ -15,9 +15,15 @@ inputs:
   github-token:
     description: 'GitHub Token'
     required: true
-  in-review-column-id:
-    description: 'Move to column id'
-    required: false
+  project-id:
+    description: 'Project ID'
+    required: true
+  status-field-id:
+    description: 'Status Field ID'
+    required: true
+  in-review-status-value-id:
+    description: 'In Review Status Value ID'
+    required: true
 
 runs:
   using: node20

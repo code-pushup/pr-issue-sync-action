@@ -2,33 +2,11 @@ import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { getOctokit } from './octokit';
 
-export async function addPrToTheProject(): Promise<string> {
-  const mutationResponse = await getOctokit().graphql<{
-    addProjectV2ItemById: {
-      item: {
-        id: string;
-      };
-    };
-  }>(
-    `
-      mutation ($projectId: ID!, $contentId: ID!) {
-        addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
-          item {
-            id
-          }
-        }
-      }
-    `,
-    {
-      projectId: core.getInput('project-id'),
-      contentId: await getPRId(),
-    },
-  );
+export async function moveIssueToInReviewStatus(
+  issueNumber: number,
+): Promise<void> {
+  core.info(`Move issue #${issueNumber} to In Review`);
 
-  return mutationResponse.addProjectV2ItemById.item.id;
-}
-
-export async function movePRToInReviewStatus(itemId: string): Promise<void> {
   await getOctokit().graphql(
     `
       mutation ($itemId: ID!, $projectId: ID!, $filedId: ID!, $optionId: String!) {
@@ -38,7 +16,7 @@ export async function movePRToInReviewStatus(itemId: string): Promise<void> {
       }
     `,
     {
-      itemId,
+      itemId: await getIssueId(issueNumber),
       projectId: core.getInput('project-id'),
       filedId: core.getInput('status-field-id'),
       optionId: core.getInput('in-review-status-value-id'),
@@ -46,10 +24,10 @@ export async function movePRToInReviewStatus(itemId: string): Promise<void> {
   );
 }
 
-async function getPRId(): Promise<string> {
+async function getIssueId(issueNumber: number): Promise<string> {
   const response = await getOctokit().graphql<{
     repository: {
-      pullRequest: {
+      issue: {
         id: string;
       };
     };
@@ -57,7 +35,7 @@ async function getPRId(): Promise<string> {
     `
       query ($owner: String!, $name: String!, $number: Int!) {
         repository(owner: $owner, name: $name) {
-          pullRequest(number: $number) {
+          issue(number: $number) {
             id
           }
         }
@@ -66,9 +44,9 @@ async function getPRId(): Promise<string> {
     {
       owner: context.repo.owner,
       name: context.repo.repo,
-      number: context.issue.number,
+      number: issueNumber,
     },
   );
 
-  return response.repository.pullRequest.id;
+  return response.repository.issue.id;
 }
