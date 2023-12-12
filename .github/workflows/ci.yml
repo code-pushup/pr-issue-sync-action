@@ -57,4 +57,6 @@ jobs:
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          in-review-column-id: PVT_kwDOCK6Lgc4AZflL
+          project-id: PVT_kwDOCK6Lgc4AZflL
+          status-field-id: PVTSSF_lADOCK6Lgc4AZflLzgQTu4s
+          in-review-status-value-id: df73e18b

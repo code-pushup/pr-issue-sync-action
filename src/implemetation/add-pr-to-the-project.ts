@@ -39,7 +39,7 @@ export async function addPrToTheProject(): Promise<void> {
       itemId,
       projectId: core.getInput('project-id'),
       filedId: core.getInput('status-field-id'),
-      optionId: core.getInput('in-review-option-id'),
+      optionId: core.getInput('in-review-status-value-id'),
     },
   );
 }
