@@ -18,10 +18,10 @@ export async function run(): Promise<void> {
 
     for (const issue of linkedIssues) {
       await core.group(`Sync issue #${issue.number} with PR`, async () => {
-        await core.group(`#${issue.number} ${issue.title}`, async () => {
-          await addLabelsFromIssueToPR(issue.number);
-          await moveIssueToInReviewStatus(issue.number);
-        });
+        core.info(`#${issue.number} ${issue.title}`);
+
+        await addLabelsFromIssueToPR(issue.number);
+        await moveIssueToInReviewStatus(issue.number);
       });
     }
 

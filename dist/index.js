@@ -29009,48 +29009,51 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.addPrToTheProject = void 0;
+exports.movePRToInReviewStatus = exports.addPrToTheProject = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function addPrToTheProject() {
     const mutationResponse = await (0, octokit_1.getOctokit)().graphql(`
-    mutation ($projectId: ID!, $contentId: ID!) {
-      addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
-        item {
-          id
+      mutation ($projectId: ID!, $contentId: ID!) {
+        addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
+          item {
+            id
+          }
         }
       }
-    }
-  `, {
+    `, {
         projectId: core.getInput('project-id'),
         contentId: await getPRId(),
     });
-    const itemId = mutationResponse.addProjectV2ItemById.item.id;
+    return mutationResponse.addProjectV2ItemById.item.id;
+}
+exports.addPrToTheProject = addPrToTheProject;
+async function movePRToInReviewStatus(itemId) {
     await (0, octokit_1.getOctokit)().graphql(`
       mutation ($itemId: ID!, $projectId: ID!, $filedId: ID!, $optionId: String!) {
-          updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $filedId, value: {singleSelectOptionId: $optionId}, projectId: $projectId}) {
-              clientMutationId
-          }
+        updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $filedId, value: {singleSelectOptionId: $optionId}, projectId: $projectId}) {
+          clientMutationId
+        }
       }
-  `, {
+    `, {
         itemId,
         projectId: core.getInput('project-id'),
         filedId: core.getInput('status-field-id'),
         optionId: core.getInput('in-review-status-value-id'),
     });
 }
-exports.addPrToTheProject = addPrToTheProject;
+exports.movePRToInReviewStatus = movePRToInReviewStatus;
 async function getPRId() {
     const response = await (0, octokit_1.getOctokit)().graphql(`
-    query ($owner: String!, $name: String!, $number: Int!) {
-      repository(owner: $owner, name: $name) {
-        pullRequest(number: $number) {
-          id
+      query ($owner: String!, $name: String!, $number: Int!) {
+        repository(owner: $owner, name: $name) {
+          pullRequest(number: $number) {
+            id
+          }
         }
       }
-    }
-  `, {
+    `, {
         owner: github_1.context.repo.owner,
         name: github_1.context.repo.repo,
         number: github_1.context.issue.number,
@@ -29097,7 +29100,7 @@ exports.getLinkedIssues = getLinkedIssues;
 
 /***/ }),
 
-/***/ 5692:
+/***/ 5489:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -29126,47 +29129,41 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.moveIssueToInReview = void 0;
+exports.moveIssueToInReviewStatus = void 0;
 const core = __importStar(__nccwpck_require__(2186));
+const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
-async function moveIssueToInReview(issueNumber) {
+async function moveIssueToInReviewStatus(issueNumber) {
     core.info(`Move issue #${issueNumber} to In Review`);
-    const columnId = core.getInput('in-review-column-id');
-    if (!columnId) {
-        core.info('No column id provided, skipping');
-        return;
-    }
     await (0, octokit_1.getOctokit)().graphql(`
-    mutation ($columnId: ID!, $cardId: ID!) {
-      moveProjectCard(input: {cardId: $cardId, columnId: $columnId}) {
-        clientMutationId
+      mutation ($itemId: ID!, $projectId: ID!, $filedId: ID!, $optionId: String!) {
+        updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $filedId, value: {singleSelectOptionId: $optionId}, projectId: $projectId}) {
+          clientMutationId
+        }
       }
-    }
-  `, {
-        columnId,
-        cardId: await getCardId(issueNumber),
+    `, {
+        itemId: await getIssueId(issueNumber),
+        projectId: core.getInput('project-id'),
+        filedId: core.getInput('status-field-id'),
+        optionId: core.getInput('in-review-status-value-id'),
     });
 }
-exports.moveIssueToInReview = moveIssueToInReview;
-async function getCardId(issueNumber) {
+exports.moveIssueToInReviewStatus = moveIssueToInReviewStatus;
+async function getIssueId(issueNumber) {
     const response = await (0, octokit_1.getOctokit)().graphql(`
-    query ($owner: String!, $name: String!, $number: Int!) {
-      repository(owner: $owner, name: $name) {
-        issue(number: $number) {
-          projectCards(first: 10) {
-            nodes {
-              id
-            }
+      query ($owner: String!, $name: String!, $number: Int!) {
+        repository(owner: $owner, name: $name) {
+          issue(number: $number) {
+            id
           }
         }
       }
-    }
-  `, {
-        owner: process.env.GITHUB_REPOSITORY_OWNER,
-        name: process.env.GITHUB_REPOSITORY_NAME,
+    `, {
+        owner: github_1.context.repo.owner,
+        name: github_1.context.repo.repo,
         number: issueNumber,
     });
-    return response.repository.issue.projectCards.nodes[0].id;
+    return response.repository.issue.id;
 }
 
 
@@ -29251,23 +29248,25 @@ const core = __importStar(__nccwpck_require__(2186));
 const add_labels_from_issue_to_pr_1 = __nccwpck_require__(6724);
 const add_pr_to_the_project_1 = __nccwpck_require__(3157);
 const get_linked_issues_1 = __nccwpck_require__(7697);
-const move_issue_to_in_review_1 = __nccwpck_require__(5692);
+const move_issue_to_in_review_status_1 = __nccwpck_require__(5489);
 async function run() {
     try {
         const linkedIssues = await core.group('Find linked issues', get_linked_issues_1.getLinkedIssues);
         core.info(`Found ${linkedIssues.length} linked issues`);
         for (const issue of linkedIssues) {
             await core.group(`Sync issue #${issue.number} with PR`, async () => {
-                await core.group(`#${issue.number} ${issue.title}`, async () => {
-                    await (0, add_labels_from_issue_to_pr_1.addLabelsFromIssueToPR)(issue.number);
-                    await (0, move_issue_to_in_review_1.moveIssueToInReview)(issue.number);
-                });
+                core.info(`#${issue.number} ${issue.title}`);
+                await (0, add_labels_from_issue_to_pr_1.addLabelsFromIssueToPR)(issue.number);
+                await (0, move_issue_to_in_review_status_1.moveIssueToInReviewStatus)(issue.number);
             });
         }
         if (!linkedIssues.length) {
             core.info('No linked issues found');
             core.info('Move PR to In Review');
-            await (0, add_pr_to_the_project_1.addPrToTheProject)();
+            const itemId = await (0, add_pr_to_the_project_1.addPrToTheProject)();
+            if (itemId) {
+                await (0, add_pr_to_the_project_1.movePRToInReviewStatus)(itemId);
+            }
         }
     }
     catch (error) {
