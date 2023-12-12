@@ -29192,7 +29192,7 @@ async function moveIssueToInReviewStatus(issueNumber) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while moving issue to In Review: ${error.message}`);
+            throw new Error(`Error while moving issue to In Review: ${error.message}`);
         }
     }
 }
