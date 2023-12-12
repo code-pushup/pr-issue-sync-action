@@ -62,8 +62,8 @@ async function getPRId(): Promise<string> {
     }
   `,
     {
-      owner: process.env.GITHUB_REPOSITORY_OWNER,
-      name: process.env.GITHUB_REPOSITORY_NAME,
+      owner: context.repo.owner,
+      name: context.repo.repo,
       number: context.issue.number,
     },
   );
