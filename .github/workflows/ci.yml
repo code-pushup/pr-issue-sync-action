@@ -57,3 +57,4 @@ jobs:
         uses: ./
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          in-review-column-id: df73e18b

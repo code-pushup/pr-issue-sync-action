@@ -6,11 +6,12 @@ import { moveIssueToInReview } from './implemetation/move-issue-to-in-review';
 
 export async function run(): Promise<void> {
   try {
-    const linkedIssues = await core.group('Find linked issues', async () => {
-      const issues = await getLinkedIssues();
-      core.info(`Found ${issues.length} linked issues`);
-      return issues;
-    });
+    const linkedIssues = await core.group(
+      'Find linked issues',
+      getLinkedIssues,
+    );
+
+    core.info(`Found ${linkedIssues.length} linked issues`);
 
     for (const issue of linkedIssues) {
       await core.group(`Sync issue #${issue.number} with PR`, async () => {
