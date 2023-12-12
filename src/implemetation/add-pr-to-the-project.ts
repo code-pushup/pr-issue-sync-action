@@ -11,7 +11,7 @@ export async function addPrToTheProject(): Promise<void> {
   }
 
   await getOctokit().rest.projects.createCard({
-    column_id: parseInt(columnId, 10),
+    column_id: columnId as unknown as number,
     content_id: context.issue.number,
     content_type: 'PullRequest',
   });
