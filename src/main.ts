@@ -1,8 +1,11 @@
 import * as core from '@actions/core';
 import { addLabelsFromIssueToPR } from './implemetation/add-labels-from-issue-to-pr';
-import { addPrToTheProject } from './implemetation/add-pr-to-the-project';
+import {
+  addPrToTheProject,
+  movePRToInReviewStatus,
+} from './implemetation/add-pr-to-the-project';
 import { getLinkedIssues } from './implemetation/get-linked-issues';
-import { moveIssueToInReview } from './implemetation/move-issue-to-in-review';
+import { moveIssueToInReviewStatus } from './implemetation/move-issue-to-in-review-status';
 
 export async function run(): Promise<void> {
   try {
@@ -17,7 +20,7 @@ export async function run(): Promise<void> {
       await core.group(`Sync issue #${issue.number} with PR`, async () => {
         await core.group(`#${issue.number} ${issue.title}`, async () => {
           await addLabelsFromIssueToPR(issue.number);
-          await moveIssueToInReview(issue.number);
+          await moveIssueToInReviewStatus(issue.number);
         });
       });
     }
@@ -25,7 +28,11 @@ export async function run(): Promise<void> {
     if (!linkedIssues.length) {
       core.info('No linked issues found');
       core.info('Move PR to In Review');
-      await addPrToTheProject();
+      const itemId = await addPrToTheProject();
+
+      if (itemId) {
+        await movePRToInReviewStatus(itemId);
+      }
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
