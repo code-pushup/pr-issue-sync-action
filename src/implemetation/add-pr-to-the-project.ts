@@ -2,30 +2,45 @@ import * as core from '@actions/core';
 import { context } from '@actions/github';
 import { getOctokit } from './octokit';
 
-export async function addPrToTheProject(): Promise<string> {
-  const mutationResponse = await getOctokit().graphql<{
-    addProjectV2ItemById: {
-      item: {
-        id: string;
+export async function addPrToTheProject(): Promise<string | undefined> {
+  core.info('Add PR to the project');
+
+  try {
+    const contentId = await getPRId();
+
+    if (!contentId) {
+      core.warning(`No PR id found for #${context.issue.number}`);
+      return;
+    }
+
+    const mutationResponse = await getOctokit().graphql<{
+      addProjectV2ItemById: {
+        item: {
+          id: string;
+        };
       };
-    };
-  }>(
-    `
-      mutation ($projectId: ID!, $contentId: ID!) {
-        addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
-          item {
-            id
+    }>(
+      `
+        mutation ($projectId: ID!, $contentId: ID!) {
+          addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
+            item {
+              id
+            }
           }
         }
-      }
-    `,
-    {
-      projectId: core.getInput('project-id'),
-      contentId: await getPRId(),
-    },
-  );
+      `,
+      {
+        projectId: core.getInput('project-id'),
+        contentId,
+      },
+    );
 
-  return mutationResponse.addProjectV2ItemById.item.id;
+    return mutationResponse.addProjectV2ItemById.item.id;
+  } catch (error) {
+    if (error instanceof Error) {
+      core.warning(`Error while adding PR to the project: ${error.message}`);
+    }
+  }
 }
 
 export async function movePRToInReviewStatus(itemId: string): Promise<void> {
@@ -46,29 +61,39 @@ export async function movePRToInReviewStatus(itemId: string): Promise<void> {
   );
 }
 
-async function getPRId(): Promise<string> {
-  const response = await getOctokit().graphql<{
-    repository: {
-      pullRequest: {
-        id: string;
+async function getPRId(): Promise<string | undefined> {
+  core.info(`Get PR id for #${context.issue.number}`);
+
+  try {
+    const response = await getOctokit().graphql<{
+      repository: {
+        pullRequest: {
+          id: string;
+        };
       };
-    };
-  }>(
-    `
-      query ($owner: String!, $name: String!, $number: Int!) {
-        repository(owner: $owner, name: $name) {
-          pullRequest(number: $number) {
-            id
+    }>(
+      `
+        query ($owner: String!, $name: String!, $number: Int!) {
+          repository(owner: $owner, name: $name) {
+            pullRequest(number: $number) {
+              id
+            }
           }
         }
-      }
-    `,
-    {
-      owner: context.repo.owner,
-      name: context.repo.repo,
-      number: context.issue.number,
-    },
-  );
+      `,
+      {
+        owner: context.repo.owner,
+        name: context.repo.repo,
+        number: context.issue.number,
+      },
+    );
 
-  return response.repository.pullRequest.id;
+    core.info(`PR id: ${response.repository.pullRequest.id}`);
+
+    return response.repository.pullRequest.id;
+  } catch (error) {
+    if (error instanceof Error) {
+      core.warning(`Error while getting PR id: ${error.message}`);
+    }
+  }
 }

@@ -9,10 +9,9 @@ import { moveIssueToInReviewStatus } from './implemetation/move-issue-to-in-revi
 
 export async function run(): Promise<void> {
   try {
-    const linkedIssues = await core.group(
-      'Find linked issues',
-      getLinkedIssues,
-    );
+    core.info('Try to find linked issues');
+
+    const linkedIssues = await getLinkedIssues();
 
     core.info(`Found ${linkedIssues.length} linked issues`);
 
@@ -27,12 +26,14 @@ export async function run(): Promise<void> {
 
     if (!linkedIssues.length) {
       core.info('No linked issues found');
-      core.info('Move PR to In Review');
-      const itemId = await addPrToTheProject();
 
-      if (itemId) {
-        await movePRToInReviewStatus(itemId);
-      }
+      await core.group('Sync PR with project', async () => {
+        const itemId = await addPrToTheProject();
+
+        if (itemId) {
+          await movePRToInReviewStatus(itemId);
+        }
+      });
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
