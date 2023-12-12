@@ -12,14 +12,14 @@ export async function addPrToTheProject(): Promise<void> {
 
   await getOctokit().graphql(
     `
-    mutation ($columnId: ID!, $cardId: ID!) {
-      addProjectCard(input: {projectColumnId: $columnId, contentId: $cardId}) {
+    mutation ($projectId: ID!, $contentId: ID!) {
+      addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId,}) {
         clientMutationId
       }
     }
   `,
     {
-      columnId,
+      projectId: columnId,
       contentId: context.issue.number,
     },
   );
