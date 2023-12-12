@@ -75,7 +75,7 @@ async function getProjectV2ItemId(
     return mutationResponse.addProjectV2ItemById.item.id;
   } catch (error) {
     if (error instanceof Error) {
-      core.error(`Error while getting issue id: ${error.message}`);
+      throw new Error(`Error while getting issue id: ${error.message}`);
     }
   }
 }

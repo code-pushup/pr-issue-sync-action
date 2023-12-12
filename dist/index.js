@@ -29221,7 +29221,7 @@ async function getProjectV2ItemId(issueId) {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.error(`Error while getting issue id: ${error.message}`);
+            throw new Error(`Error while getting issue id: ${error.message}`);
         }
     }
 }
