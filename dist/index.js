@@ -29170,13 +29170,13 @@ const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const octokit_1 = __nccwpck_require__(1855);
 async function moveIssueToInReviewStatus(issueNumber) {
-    core.info(`Move issue #${issueNumber} to In Review`);
     try {
         const itemId = await getProjectV2ItemId(issueNumber);
         if (!itemId) {
             core.warning(`No issue id found for #${issueNumber}`);
             return;
         }
+        core.info(`Move issue #${issueNumber} to In Review`);
         await (0, octokit_1.getOctokit)().graphql(`
         mutation ($itemId: ID!, $projectId: ID!, $filedId: ID!, $optionId: String!) {
           updateProjectV2ItemFieldValue(input: {itemId: $itemId, fieldId: $filedId, value: {singleSelectOptionId: $optionId}, projectId: $projectId}) {
@@ -29198,13 +29198,13 @@ async function moveIssueToInReviewStatus(issueNumber) {
 }
 exports.moveIssueToInReviewStatus = moveIssueToInReviewStatus;
 async function getProjectV2ItemId(issueId) {
-    core.info('Get issue id');
     try {
         const contentId = await getIssueId(issueId);
         if (!contentId) {
             core.error(`No issue id found for #${issueId}`);
             return;
         }
+        core.info(`Get project v2 item id for #${issueId}`);
         const mutationResponse = await (0, octokit_1.getOctokit)().graphql(`
         mutation ($projectId: ID!, $contentId: ID!) {
           addProjectV2ItemById(input: {contentId: $contentId, projectId: $projectId}) {
@@ -29217,6 +29217,7 @@ async function getProjectV2ItemId(issueId) {
             projectId: core.getInput('project-id'),
             contentId,
         });
+        core.info(`Project v2 item id: ${mutationResponse.addProjectV2ItemById.item.id}`);
         return mutationResponse.addProjectV2ItemById.item.id;
     }
     catch (error) {
