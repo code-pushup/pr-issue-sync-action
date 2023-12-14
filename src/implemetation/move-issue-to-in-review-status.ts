@@ -5,8 +5,6 @@ import { getOctokit } from './octokit';
 export async function moveIssueToInReviewStatus(
   issueNumber: number,
 ): Promise<void> {
-  core.info(`Move issue #${issueNumber} to In Review`);
-
   try {
     const itemId = await getProjectV2ItemId(issueNumber);
 
@@ -14,6 +12,8 @@ export async function moveIssueToInReviewStatus(
       core.warning(`No issue id found for #${issueNumber}`);
       return;
     }
+
+    core.info(`Move issue #${issueNumber} to In Review`);
 
     await getOctokit().graphql(
       `
@@ -42,8 +42,6 @@ export async function moveIssueToInReviewStatus(
 async function getProjectV2ItemId(
   issueId: number,
 ): Promise<string | undefined> {
-  core.info('Get issue id');
-
   try {
     const contentId = await getIssueId(issueId);
 
@@ -51,6 +49,8 @@ async function getProjectV2ItemId(
       core.error(`No issue id found for #${issueId}`);
       return;
     }
+
+    core.info(`Get project v2 item id for #${issueId}`);
 
     const mutationResponse = await getOctokit().graphql<{
       addProjectV2ItemById: {
@@ -72,6 +72,10 @@ async function getProjectV2ItemId(
         projectId: core.getInput('project-id'),
         contentId,
       },
+    );
+
+    core.info(
+      `Project v2 item id: ${mutationResponse.addProjectV2ItemById.item.id}`,
     );
 
     return mutationResponse.addProjectV2ItemById.item.id;
